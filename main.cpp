@@ -61,74 +61,16 @@
 #include <iostream>
 #include <stdexcept>
 #include <vector>
+#include <shlwapi.h>
+#include <Shellapi.h>
+
+#include "VectorContainer.h"
 
 #pragma comment(lib,"ws2_32.lib")
 
 #define UNSIGNED_INT unsigned int
 #define MAX(x,y) ((x)>(y))?(x):(y)
 
-class Vector
-{
-public:
-    Vector(std::initializer_list<double> list) : elements{new double[list.size()]}, sz{list.size()}
-    {
-        std::copy(list.begin(), list.end(), elements);
-    }
-    Vector(unsigned int s) : elements{new double[s]}, sz{s}
-    {
-        for (int i = 0; i != s; ++i)
-        {
-            elements[i] = 0;
-        }
-    }
-    ~Vector()
-    {
-        delete[] elements;
-    }
-    double& operator[](int i)
-    {
-        return elements[i];
-    }
-    unsigned int size() const
-    {
-        return sz;
-    }
-private:
-    double* elements;
-    unsigned int sz;
-};
-
-class Container
-{
-public:
-    virtual ~Container() {};
-    virtual double& operator[](int) = 0;
-    virtual int size() const = 0;
-};
-
-class VectorContainer : public Container
-{
-    Vector v;
-public:
-    VectorContainer(int s) : v(s)
-    {
-
-    };
-    ~VectorContainer()
-    {
-
-    }
-    double& operator[](int i)
-    {
-        if (i >= size())
-            throw std::out_of_range( "Array out of bounds." );
-        return v[i];
-    }
-    int size() const
-    {
-        return v.size();
-    }
-};
 
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -145,9 +87,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // Here your application is laid out.
             // For this introduction, we just print out "Hello, World!"
             // in the top left corner.
-//            TextOutA(hdc,
-//                    5, 5,
-//                    greeting, _tcslen(greeting));
+            TextOutA(hdc,
+                    45, 5,
+                    greeting, _tcslen(greeting));
             // End application specific layout section.
 
             EndPaint(hWnd, &ps);
@@ -237,10 +179,26 @@ int WINAPI WinMain(HINSTANCE hInstance,
     // Declare NOTIFYICONDATA details.
     // Error handling is omitted here for brevity. Do not omit it in your code.
 
-//    NOTIFYICONDATA nid = {};
-//    nid.cbSize = sizeof(nid);
-//    nid.hWnd = hWnd;
-//    nid.uFlags = NIF_ICON | NIF_TIP | NIF_GUID;
+    NOTIFYICONDATA nid = {0};
+
+
+    nid.cbSize = sizeof(NOTIFYICONDATA);
+    //nid.cbSize = NOTIFYICONDATA_V1_SIZE;
+
+    nid.uID = 1234564;
+
+    nid.cbSize = sizeof(nid);
+    // set the window you want to recieve event messages
+    nid.hWnd = hWnd;
+//    nid.uFlags = NIF_ICON | NIF_TIP; // | NIF_GUID
+    nid.uFlags = NIF_ICON|NIF_MESSAGE|NIF_TIP| NIF_STATE;
+
+//    nid.hIcon =
+//            (HICON) LoadImage( hInstance, MAKEINTRESOURCE(IDI_ASTERISK),
+//                    IMAGE_ICON,
+//                    GetSystemMetrics(SM_CXSMICON),
+//                    GetSystemMetrics(SM_CYSMICON),
+//                    LR_DEFAULTCOLOR);
 
     // Note: This is an example GUID only and should not be used.
     // Normally, you should use a GUID-generating tool to provide the value to
@@ -253,46 +211,49 @@ int WINAPI WinMain(HINSTANCE hInstance,
 //
 //    // This text will be shown as the icon's tooltip.
 //    StringCchCopy(nid.szTip, ARRAYSIZE(nid.szTip), L"Test application");
+    strcpy(nid.szTip, "Test application 2123");
 //
 //    // Load the icon for high DPI.
 //    LoadIconMetric(hInst, MAKEINTRESOURCE(IDI_SMALL), LIM_SMALL, &(nid.hIcon));
 
+    nid.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(32515));
+
     // Show the notification.
-//    Shell_NotifyIcon(NIM_ADD, &nid) ? S_OK : E_FAIL;
+    Shell_NotifyIcon(NIM_ADD, &nid) ? S_OK : E_FAIL;
 
 
-    WSADATA wsaData;
-    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
-        std::cout << "WSAStartup failed.\n";
-        system("pause");
-        return 1;
-    }
-    SOCKET Socket=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-    struct hostent *host;
-    host = gethostbyname("www.google.com");
-    SOCKADDR_IN SockAddr;
-    SockAddr.sin_port=htons(80);
-    SockAddr.sin_family=AF_INET;
-    SockAddr.sin_addr.s_addr = *((unsigned long*)host->h_addr);
-    std::cout << "Connecting...\n";
-    if(connect(Socket,(SOCKADDR*)(&SockAddr),sizeof(SockAddr)) != 0){
-        std::cout << "Could not connect";
-        system("pause");
-        return 1;
-    }
-    std::cout << "Connected.\n";
-    send(Socket,"GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n", strlen("GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n"),0);
-    char buffer[10000];
-    int nDataLength;
-    while ((nDataLength = recv(Socket,buffer,10000,0)) > 0){
-        int i = 0;
-        while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r') {
-            std::cout << buffer[i];
-            i += 1;
-        }
-    }
-    closesocket(Socket);
-    WSACleanup();
+//    WSADATA wsaData;
+//    if (WSAStartup(MAKEWORD(2,2), &wsaData) != 0) {
+//        std::cout << "WSAStartup failed.\n";
+//        system("pause");
+//        return 1;
+//    }
+//    SOCKET Socket=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+//    struct hostent *host;
+//    host = gethostbyname("www.google.com");
+//    SOCKADDR_IN SockAddr;
+//    SockAddr.sin_port=htons(80);
+//    SockAddr.sin_family=AF_INET;
+//    SockAddr.sin_addr.s_addr = *((unsigned long*)host->h_addr);
+//    std::cout << "Connecting...\n";
+//    if(connect(Socket,(SOCKADDR*)(&SockAddr),sizeof(SockAddr)) != 0){
+//        std::cout << "Could not connect";
+//        system("pause");
+//        return 1;
+//    }
+//    std::cout << "Connected.\n";
+//    send(Socket,"GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n", strlen("GET / HTTP/1.1\r\nHost: www.google.com\r\nConnection: close\r\n\r\n"),0);
+//    char buffer[10000];
+//    int nDataLength;
+//    while ((nDataLength = recv(Socket,buffer,10000,0)) > 0){
+//        int i = 0;
+//        while (buffer[i] >= 32 || buffer[i] == '\n' || buffer[i] == '\r') {
+//            std::cout << buffer[i];
+//            i += 1;
+//        }
+//    }
+//    closesocket(Socket);
+//    WSACleanup();
 
 
     // =============================================
