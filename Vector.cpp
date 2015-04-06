@@ -2,36 +2,33 @@
 // Created by DmitriyS on 12/03/2015.
 //
 
+#include <bits/algorithmfwd.h>
 #include "Vector.h"
-#include <bits/stl_algobase.h>
 
-class Vector
+Vector::Vector(std::initializer_list<double> list) : elements{new double[list.size()]}, sz{list.size()}
 {
-public:
-    Vector(std::initializer_list<double> list) : elements{new double[list.size()]}, sz{list.size()}
+    std::copy(list.begin(), list.end(), elements);
+}
+
+Vector::Vector(unsigned int s) : elements{new double[s]}, sz{s}
+{
+    for (int i = 0; i != s; ++i)
     {
-        std::copy(list.begin(), list.end(), elements);
+        elements[i] = 0;
     }
-    Vector(unsigned int s) : elements{new double[s]}, sz{s}
-    {
-        for (int i = 0; i != s; ++i)
-        {
-            elements[i] = 0;
-        }
-    }
-    ~Vector()
-    {
-        delete[] elements;
-    }
-    double& operator[](int i)
-    {
-        return elements[i];
-    }
-    unsigned int size() const
-    {
-        return sz;
-    }
-private:
-    double* elements;
-    unsigned int sz;
-};
+}
+
+Vector::~Vector()
+{
+    delete[] elements;
+}
+
+double& Vector::operator[](int i)
+{
+    return elements[i];
+}
+
+unsigned int Vector::size() const
+{
+    return sz;
+}
