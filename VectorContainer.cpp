@@ -5,26 +5,24 @@
 #include <stdexcept>
 #include "VectorContainer.h"
 
-class VectorContainer : public Container
+VectorContainer::VectorContainer(int s) : v(s)
 {
-    Vector v;
-public:
-    VectorContainer(int s) : v(s)
-    {
 
-    };
-    ~VectorContainer()
-    {
+};
 
-    }
-    double& operator[](int i)
-    {
-        if (i >= size())
-            throw std::out_of_range( "Array out of bounds." );
-        return v[i];
-    }
-    int size() const
-    {
-        return v.size();
-    }
+VectorContainer::~VectorContainer()
+{
+
+};
+
+double& VectorContainer::operator[](int i)
+{
+    if (i >= size())
+        throw std::out_of_range( "Array out of bounds." );
+    return v[i];
+};
+
+int VectorContainer::size() const
+{
+    return v.size();
 };
